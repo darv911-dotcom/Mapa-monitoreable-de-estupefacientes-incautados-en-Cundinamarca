@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Infografía — Regresión OLS y Efectos Fijos | Reprobación escolar</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f5f6fa;color:#1a1a1a;padding:1.5rem 1rem}
+.page{max-width:1080px;margin:0 auto}
+
+.masthead{background:#1F4E79;border-radius:12px;padding:1.75rem 2rem;margin-bottom:1.5rem}
+.masthead-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.masthead h1{font-size:20px;font-weight:700;color:#fff;margin-bottom:.35rem;line-height:1.3}
+.masthead p{font-size:12px;color:#ADD8F0;line-height:1.6}
+.masthead-badge{background:rgba(255,255,255,0.12);border-radius:8px;padding:8px 14px;white-space:nowrap;text-align:center}
+.masthead-badge-val{font-size:22px;font-weight:700;color:#fff}
+.masthead-badge-lbl{font-size:10px;color:#ADD8F0;margin-top:2px}
+.formula-box{background:rgba(255,255,255,0.10);border-radius:8px;padding:.75rem 1rem;margin-top:.9rem;font-family:monospace;font-size:13px;color:#fff;letter-spacing:.02em}
+.formula-box span{color:#9FE1CB}
+
+.sec{background:#fff;border-radius:12px;border:1px solid #e4e6ee;padding:1.4rem 1.6rem;margin-bottom:1.25rem}
+.sec-label{font-size:10px;font-weight:700;letter-spacing:.1em;color:#888;text-transform:uppercase;margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid #f0f0f0}
+
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:0}
+.kpi{background:#f5f7fc;border-radius:8px;padding:13px 11px}
+.kpi-label{font-size:11px;color:#666;margin-bottom:4px;line-height:1.35}
+.kpi-val{font-size:24px;font-weight:700;line-height:1.1}
+.kpi-sub{font-size:10px;color:#999;margin-top:3px}
+.blue{color:#185FA5}.teal{color:#0F6E56}.amber{color:#854F0B}.red{color:#791F1F}.muted{color:#555}.green{color:#1E8449}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+
+.model-card{border:1px solid #e0e0e0;border-radius:10px;overflow:hidden}
+.model-header{padding:10px 14px;display:flex;align-items:center;gap:10px}
+.model-header h3{font-size:13px;font-weight:700;margin:0}
+.model-header p{font-size:11px;margin:0;margin-top:2px;opacity:.75}
+.model-body{padding:0 14px 14px}
+.model-ols .model-header{background:#E6F1FB}
+.model-ols .model-header h3{color:#0C447C}
+.model-ols .model-header p{color:#185FA5}
+.model-fe .model-header{background:#EAF3DE}
+.model-fe .model-header h3{color:#27500A}
+.model-fe .model-header p{color:#3B6D11}
+.model-twfe .model-header{background:#FAEEDA}
+.model-twfe .model-header h3{color:#412402}
+.model-twfe .model-header p{color:#633806}
+
+.coef-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}
+.coef-table thead tr{background:#fafafa}
+.coef-table th{text-align:left;padding:5px 7px;font-weight:700;color:#555;border-bottom:1.5px solid #e8e8e8;font-size:10px}
+.coef-table td{padding:5px 7px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+.coef-table tr:last-child td{border-bottom:none}
+.coef-table .mono{font-family:monospace;font-size:11px}
+.badge{display:inline-block;padding:1px 7px;border-radius:4px;font-size:10px;font-weight:700;white-space:nowrap}
+.b-sig3{background:#E1F5EE;color:#085041}
+.b-sig2{background:#E6F1FB;color:#0C447C}
+.b-sig1{background:#EAF3DE;color:#27500A}
+.b-sig0{background:#FAEEDA;color:#633806}
+.b-ns{background:#f0f0f0;color:#777}
+.b-gone{background:#FCEBEB;color:#791F1F}
+
+.finding{border-left:4px solid;border-radius:0 8px 8px 0;padding:10px 13px;margin-bottom:9px;font-size:12.5px;line-height:1.65}
+.finding:last-child{margin-bottom:0}
+.finding.blue{border-color:#185FA5;background:#E6F1FB;color:#0C447C}
+.finding.teal{border-color:#1D9E75;background:#E1F5EE;color:#085041}
+.finding.amber{border-color:#BA7517;background:#FAEEDA;color:#633806}
+.finding.red{border-color:#A32D2D;background:#FCEBEB;color:#791F1F}
+.finding.gray{border-color:#888;background:#f5f5f5;color:#444}
+.finding strong{font-weight:700}
+
+.explain-box{background:#fafbff;border:1px solid #dde3f0;border-radius:10px;padding:1.1rem 1.25rem;margin-bottom:1rem}
+.explain-box:last-child{margin-bottom:0}
+.explain-title{font-size:13px;font-weight:700;color:#1F4E79;margin-bottom:.5rem}
+.explain-body{font-size:12px;color:#444;line-height:1.75}
+
+.step-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.step{text-align:center;padding:12px 6px}
+.step-num{width:32px;height:32px;border-radius:50%;background:#E6F1FB;color:#185FA5;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 7px}
+.step-title{font-size:11px;font-weight:700;color:#222;margin-bottom:3px}
+.step-body{font-size:10px;color:#666;line-height:1.5}
+
+.ftest-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.ftest-box{border-radius:8px;padding:11px 13px;border:1px solid}
+.ftest-box.green{background:#EAF3DE;border-color:#97C459}
+.ftest-box.amber{background:#FAEEDA;border-color:#EF9F27}
+.ftest-label{font-size:10px;font-weight:700;color:#555;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
+.ftest-val{font-size:19px;font-weight:700;margin-bottom:2px}
+.ftest-val.green{color:#27500A}
+.ftest-val.amber{color:#633806}
+.ftest-interp{font-size:11px;line-height:1.5}
+.ftest-interp.green{color:#3B6D11}
+.ftest-interp.amber{color:#854F0B}
+
+.chart-wrap{position:relative;width:100%}
+.legend-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px;font-size:11px;color:#555}
+.ld{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:3px;vertical-align:middle}
+
+.comparison-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:.75rem}
+.comp-card{border-radius:8px;padding:11px 13px}
+.comp-card.ols{background:#E6F1FB}
+.comp-card.fe{background:#EAF3DE}
+.comp-card.twfe{background:#FAEEDA}
+.comp-label{font-size:10px;font-weight:700;letter-spacing:.05em;margin-bottom:5px;text-transform:uppercase}
+.comp-label.blue{color:#0C447C}
+.comp-label.teal{color:#085041}
+.comp-label.amber{color:#412402}
+.comp-var{font-size:11px;margin-bottom:3px;display:flex;justify-content:space-between;align-items:center;gap:4px}
+.comp-name{color:#444}
+.comp-val{font-family:monospace;font-size:11px;font-weight:700}
+
+.pill-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:.6rem}
+.pill{padding:3px 9px;border-radius:20px;font-size:11px;border:1px solid #ddd;color:#555;background:#f8f8f8}
+.limit-item{display:flex;gap:10px;margin-bottom:10px;font-size:12px;line-height:1.6}
+.limit-num{width:20px;height:20px;min-width:20px;border-radius:50%;background:#FAEEDA;color:#633806;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.limit-text strong{font-weight:700;color:#222}
+.limit-text{color:#555}
+
+.footer{text-align:center;font-size:11px;color:#999;margin-top:.75rem;padding-top:.75rem;border-top:1px solid #e0e0e0}
+
+.bias-diagram{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-top:.75rem}
+.bias-box{border-radius:8px;padding:10px 12px;text-align:center}
+.bias-arrow{font-size:20px;color:#888;text-align:center}
+.bias-title{font-size:11px;font-weight:700;margin-bottom:3px}
+.bias-body{font-size:10px;line-height:1.5;color:#555}
+
+.r2-bar-wrap{margin-top:8px}
+.r2-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:11px}
+.r2-label{width:60px;color:#555;text-align:right;flex-shrink:0}
+.r2-track{flex:1;background:#f0f0f0;border-radius:4px;height:16px;overflow:hidden}
+.r2-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:6px;font-size:10px;font-weight:700;color:#fff}
+.r2-pct{width:36px;color:#555;text-align:left;flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- MASTHEAD -->
+<div class="masthead">
+  <div class="masthead-top">
+    <div style="flex:1">
+      <h1>Determinantes de la reprobación escolar en Cundinamarca</h1>
+      <p>Modelos de regresión OLS agrupado, Efectos Fijos de Municipio y Efectos Fijos de Doble Vía (TWFE)<br>Panel de municipios · Errores estándar agrupados por municipio (clustered HC3) · R, paquete plm</p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div class="masthead-badge"><div class="masthead-badge-val">3</div><div class="masthead-badge-lbl">Especificaciones</div></div>
+      <div class="masthead-badge"><div class="masthead-badge-val">116</div><div class="masthead-badge-lbl">Municipios</div></div>
+      <div class="masthead-badge"><div class="masthead-badge-val">2015–24</div><div class="masthead-badge-lbl">Período</div></div>
+    </div>
+  </div>
+  <div class="formula-box">
+    <span>reprobación</span> ~ ln(violencia) + ln(gramos) + incidencia_pobreza
+    <span style="color:#FAC775;margin-left:1.5rem">·  Variable dependiente: tasa de reprobación escolar (%)</span>
+  </div>
+</div>
+
+<!-- SECCIÓN 1: QUÉ ESTAMOS MIDIENDO -->
+<div class="sec">
+  <div class="sec-label">¿Qué pregunta estamos respondiendo?</div>
+  <div class="two-col">
+    <div>
+      <div class="explain-box">
+        <div class="explain-title">La pregunta de investigación</div>
+        <div class="explain-body">¿La actividad de economías ilegales —medida por las incautaciones de drogas— y la violencia por bandas criminales están asociadas con mayores tasas de reprobación escolar en los municipios de Cundinamarca? ¿Y cuánto de esa asociación persiste cuando se controla por la pobreza y por las características propias de cada municipio?</div>
+      </div>
+      <div class="explain-box" style="margin-bottom:0">
+        <div class="explain-title">Por qué tiene sentido teórico</div>
+        <div class="explain-body">La literatura en economía de la educación muestra que los entornos de alta inseguridad afectan el rendimiento escolar: los estudiantes faltanel día después de un evento violento, los docentes rotan más en zonas de conflicto, y los hogares en pobreza priorizan el trabajo infantil sobre la escuela. Este modelo busca cuantificar esos canales con datos municipales de Cundinamarca.</div>
+      </div>
+    </div>
+    <div>
+      <div class="explain-box" style="margin-bottom:10px">
+        <div class="explain-title">Las tres variables explicativas</div>
+        <div class="explain-body">
+          <strong>ln(violencia):</strong> logaritmo natural de eventos de violencia interpersonal por bandas criminales. Captura la exposición del entorno escolar a la conflictividad organizada.<br><br>
+          <strong>ln(gramos):</strong> logaritmo del total de gramos de estupefacientes incautados (winsorizados). Proxy de la intensidad de la economía ilegal local.<br><br>
+          <strong>incidencia_pobreza:</strong> porcentaje de la población bajo la línea de pobreza monetaria (dato departamental DANE). Control socioeconómico fundamental.
+        </div>
+      </div>
+      <div class="explain-box" style="margin-bottom:0">
+        <div class="explain-title">Transformación logarítmica: ¿por qué?</div>
+        <div class="explain-body">Las incautaciones y los eventos de violencia tienen distribuciones muy asimétricas — pocos municipios tienen valores enormes. El logaritmo "aplana" esa asimetría y permite interpretar los coeficientes como semielasticidades: un incremento del 1% en los gramos incautados se asocia con un cambio de β/100 puntos porcentuales en la reprobación.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECCIÓN 2: METODOLOGÍA PEDAGÓGICA -->
+<div class="sec">
+  <div class="sec-label">Metodología — de lo simple a lo riguroso</div>
+  <div class="step-row">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-title">OLS agrupado</div>
+      <div class="step-body">Regresión mínimos cuadrados ordinaria ignorando que los datos son un panel. Mezcla variación entre municipios y dentro de cada municipio. Sesgada si hay características no observadas por municipio.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-title">FE de municipio</div>
+      <div class="step-body">Cada municipio actúa como su propio control. Se eliminan diferencias permanentes entre municipios (geografía, tradición educativa, dotación institucional). Solo explota variación temporal <em>dentro</em> de cada lugar.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-title">TWFE (doble vía)</div>
+      <div class="step-body">Añade efectos fijos de año: controla también por choques comunes a todos los municipios en un mismo año (COVID-19, política nacional, ciclos económicos). El modelo más exigente.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-title">SE clustered</div>
+      <div class="step-body">Los errores estándar se calculan agrupando por municipio (HC3). Corrige que las observaciones del mismo municipio a lo largo del tiempo no son independientes entre sí.</div>
+    </div>
+  </div>
+  <div class="bias-diagram">
+    <div class="bias-box" style="background:#E6F1FB">
+      <div class="bias-title" style="color:#0C447C">OLS agrupado</div>
+      <div class="bias-body">Compara municipios entre sí. Si los municipios con más incautaciones son también más urbanos y pobres, el OLS atribuye el efecto de la urbanización a las incautaciones. <strong style="color:#A32D2D">Sesgo por variable omitida.</strong></div>
+    </div>
+    <div class="bias-arrow">→</div>
+    <div class="bias-box" style="background:#EAF3DE">
+      <div class="bias-title" style="color:#085041">FE de municipio</div>
+      <div class="bias-body">Cada municipio es comparado consigo mismo en distintos años. "¿Cuando Soacha tiene más incautaciones que su propio promedio, ¿también tiene más reprobación?" Elimina el sesgo de urbanización. <strong style="color:#1E8449">Más limpio.</strong></div>
+    </div>
+  </div>
+</div>
+
+<!-- SECCIÓN 3: RESULTADOS DE LOS TRES MODELOS -->
+<div class="sec">
+  <div class="sec-label">Resultados — los tres modelos comparados</div>
+  <div class="three-col">
+
+    <!-- OLS -->
+    <div class="model-card model-ols">
+      <div class="model-header">
+        <div>
+          <h3>M1 — MCO agrupado (Pooled OLS)</h3>
+          <p>Estimador de referencia · Sesgado si hay FE · R² = 0.058</p>
+        </div>
+      </div>
+      <div class="model-body">
+        <table class="coef-table">
+          <thead><tr><th>Variable</th><th style="text-align:right">β</th><th style="text-align:right">SE_cl</th><th style="text-align:right">p</th><th>Sig.</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>(Intercepto)</td>
+              <td class="mono" style="text-align:right">−4.431</td>
+              <td class="mono" style="text-align:right">1.865</td>
+              <td class="mono" style="text-align:right">0.018</td>
+              <td><span class="badge b-sig1">*</span></td>
+            </tr>
+            <tr>
+              <td>ln(violencia)</td>
+              <td class="mono" style="text-align:right">1.148</td>
+              <td class="mono" style="text-align:right">0.626</td>
+              <td class="mono" style="text-align:right">0.067</td>
+              <td><span class="badge b-sig0">.</span></td>
+            </tr>
+            <tr>
+              <td>ln(gramos)</td>
+              <td class="mono" style="text-align:right">0.226</td>
+              <td class="mono" style="text-align:right">0.082</td>
+              <td class="mono" style="text-align:right">0.006</td>
+              <td><span class="badge b-sig2">**</span></td>
+            </tr>
+            <tr>
+              <td>incid. pobreza</td>
+              <td class="mono" style="text-align:right">0.260</td>
+              <td class="mono" style="text-align:right">0.096</td>
+              <td class="mono" style="text-align:right">0.007</td>
+              <td><span class="badge b-sig2">**</span></td>
+            </tr>
+            <tr style="background:#f9f9f9">
+              <td colspan="5" style="font-size:10px;color:#888;padding-top:7px">R² = 0.058 · R² aj. = 0.054 · N ≈ 1.160</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="margin-top:10px;font-size:11px;color:#555;line-height:1.6;background:#E6F1FB;border-radius:6px;padding:8px 10px">
+          <strong style="color:#0C447C">Lectura:</strong> Segun el OLS, un 1% más de gramos incautados se asocia con +0.226 pp de reprobación. Pero este modelo no controla por las diferencias estructurales entre municipios — el coeficiente está inflado.
+        </div>
+      </div>
+    </div>
+
+    <!-- FE -->
+    <div class="model-card model-fe">
+      <div class="model-header">
+        <div>
+          <h3>M2 — Efectos Fijos de Municipio (FE Within)</h3>
+          <p>Controla α_i · Preferido sobre OLS · F = 7.27***</p>
+        </div>
+      </div>
+      <div class="model-body">
+        <table class="coef-table">
+          <thead><tr><th>Variable</th><th style="text-align:right">β</th><th style="text-align:right">SE_cl</th><th style="text-align:right">p</th><th>Sig.</th></tr></thead>
+          <tbody>
+            <tr>
+              <td style="color:#999;font-style:italic">(Intercepto)</td>
+              <td colspan="4" style="font-size:10px;color:#999;text-align:center">absorbido por α_i</td>
+            </tr>
+            <tr>
+              <td>ln(violencia)</td>
+              <td class="mono" style="text-align:right">0.405</td>
+              <td class="mono" style="text-align:right">0.434</td>
+              <td class="mono" style="text-align:right">0.351</td>
+              <td><span class="badge b-ns">ns</span></td>
+            </tr>
+            <tr>
+              <td>ln(gramos)</td>
+              <td class="mono" style="text-align:right">0.033</td>
+              <td class="mono" style="text-align:right">0.056</td>
+              <td class="mono" style="text-align:right">0.555</td>
+              <td><span class="badge b-ns">ns</span></td>
+            </tr>
+            <tr>
+              <td>incid. pobreza</td>
+              <td class="mono" style="text-align:right">0.177</td>
+              <td class="mono" style="text-align:right">0.079</td>
+              <td class="mono" style="text-align:right">0.026</td>
+              <td><span class="badge b-sig1">*</span></td>
+            </tr>
+            <tr style="background:#f9f9f9">
+              <td colspan="5" style="font-size:10px;color:#888;padding-top:7px">F-test FE vs OLS: F = 7.27, p &lt; 0.0001 ✓</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="margin-top:10px;font-size:11px;color:#555;line-height:1.6;background:#EAF3DE;border-radius:6px;padding:8px 10px">
+          <strong style="color:#085041">Lectura:</strong> Al controlar por la identidad del municipio, el efecto de gramos cae un 85% (de 0.226 a 0.033) y pierde significancia. Solo la pobreza mantiene un efecto significativo (*). El sesgo del OLS era real.
+        </div>
+      </div>
+    </div>
+
+    <!-- TWFE -->
+    <div class="model-card model-twfe">
+      <div class="model-header">
+        <div>
+          <h3>M3 — Efectos Fijos de Doble Vía (TWFE)</h3>
+          <p>Controla α_i + γ_t · F temporal = 5.97*** · Más exigente</p>
+        </div>
+      </div>
+      <div class="model-body">
+        <table class="coef-table">
+          <thead><tr><th>Variable</th><th style="text-align:right">β</th><th style="text-align:right">SE_cl</th><th style="text-align:right">p</th><th>Sig.</th></tr></thead>
+          <tbody>
+            <tr>
+              <td style="color:#999;font-style:italic">(Intercepto)</td>
+              <td colspan="4" style="font-size:10px;color:#999;text-align:center">absorbido por α_i</td>
+            </tr>
+            <tr>
+              <td>ln(violencia)</td>
+              <td class="mono" style="text-align:right">0.447</td>
+              <td class="mono" style="text-align:right">0.418</td>
+              <td class="mono" style="text-align:right">0.285</td>
+              <td><span class="badge b-ns">ns</span></td>
+            </tr>
+            <tr>
+              <td>ln(gramos)</td>
+              <td class="mono" style="text-align:right">0.044</td>
+              <td class="mono" style="text-align:right">0.053</td>
+              <td class="mono" style="text-align:right">0.410</td>
+              <td><span class="badge b-ns">ns</span></td>
+            </tr>
+            <tr>
+              <td>incid. pobreza</td>
+              <td class="mono" style="text-align:right; color:#A32D2D">— —</td>
+              <td colspan="3" style="font-size:10px;color:#A32D2D;text-align:center"><span class="badge b-gone">colineal con γ_t</span></td>
+            </tr>
+            <tr style="background:#f9f9f9">
+              <td colspan="5" style="font-size:10px;color:#888;padding-top:7px">F-test γ_t vs M2: F = 5.97, p = 0.0005 ✓</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="margin-top:10px;font-size:11px;color:#555;line-height:1.6;background:#FAEEDA;border-radius:6px;padding:8px 10px">
+          <strong style="color:#412402">Lectura:</strong> Los efectos de año (γ_t) absorben la pobreza departamental, que varía solo por año. Los coeficientes de gramos y violencia permanecen no significativos. El modelo más limpio confirma: no hay efecto causal identificable.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SECCIÓN 4: F-TESTS -->
+<div class="sec">
+  <div class="sec-label">Tests F de selección de especificación — ¿qué modelo usar?</div>
+  <div class="ftest-row">
+    <div class="ftest-box green">
+      <div class="ftest-label">F-test: FE municipio vs. OLS (Prueba de Chow)</div>
+      <div class="ftest-val green">F = 7.268 &nbsp; p &lt; 0.0001</div>
+      <div class="ftest-interp green"><strong>Interpretación:</strong> Se rechaza H₀ (que los efectos fijos de municipio son todos cero). Los municipios tienen características no observadas que afectan la reprobación, y el OLS las ignora. <strong>El FE de municipio es obligatorio.</strong></div>
+    </div>
+    <div class="ftest-box amber">
+      <div class="ftest-label">F-test: TWFE vs. FE municipio (efectos temporales)</div>
+      <div class="ftest-val amber">F = 5.968 &nbsp; p = 0.0005</div>
+      <div class="ftest-interp amber"><strong>Interpretación:</strong> Se rechaza H₀ (que los efectos de año son todos cero). Hay choques macroeconómicos comunes que afectan a todos los municipios cada año (COVID-19, ciclos de pobreza). <strong>El TWFE es el modelo de referencia preferido.</strong></div>
+    </div>
+  </div>
+  <div style="margin-top:12px;font-size:12px;color:#555;background:#f5f7fc;border-radius:8px;padding:10px 13px;line-height:1.6">
+    <strong>¿Qué es el F-test de Chow en palabras simples?</strong> Imagina que preguntas: "¿Tiene Soacha algo especial que la diferencie de Villeta, independientemente de las variables del modelo?" Si la respuesta es sí (F grande, p pequeño), entonces ignorar esa diferencia sesga todos los coeficientes. El F-test mide exactamente eso: si los "efectos específicos" de cada municipio importan de forma conjunta.
+  </div>
+</div>
+
+<!-- SECCIÓN 5: CAÍDA DE COEFICIENTES -->
+<div class="sec">
+  <div class="sec-label">El viaje de los coeficientes — de OLS al TWFE</div>
+  <div class="two-col">
+    <div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:.6rem">Evolución del coeficiente de ln(gramos)</div>
+      <div class="legend-row">
+        <span><span class="ld" style="background:#378ADD"></span>OLS</span>
+        <span><span class="ld" style="background:#1D9E75"></span>FE municipio</span>
+        <span><span class="ld" style="background:#BA7517"></span>TWFE</span>
+      </div>
+      <div class="chart-wrap" style="height:190px"><canvas id="cGramos"></canvas></div>
+      <div style="font-size:11px;color:#555;margin-top:8px;line-height:1.55;background:#f9f9f9;border-radius:6px;padding:7px 9px">
+        La caída del 85% entre OLS (0.226) y FE (0.033) revela que la correlación cruda era espuria: los municipios grandes tienen más incautaciones <em>y</em> más reprobación por su tamaño, no por causalidad entre las dos variables.
+      </div>
+    </div>
+    <div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:.6rem">Evolución del coeficiente de ln(violencia)</div>
+      <div class="legend-row">
+        <span><span class="ld" style="background:#378ADD"></span>OLS</span>
+        <span><span class="ld" style="background:#1D9E75"></span>FE municipio</span>
+        <span><span class="ld" style="background:#BA7517"></span>TWFE</span>
+      </div>
+      <div class="chart-wrap" style="height:190px"><canvas id="cViolencia"></canvas></div>
+      <div style="font-size:11px;color:#555;margin-top:8px;line-height:1.55;background:#f9f9f9;border-radius:6px;padding:7px 9px">
+        La violencia muestra el patrón opuesto al de gramos: su coeficiente <em>sube</em> ligeramente al pasar de FE (0.405) a TWFE (0.447), aunque sigue sin ser significativo. Sugiere cierta variación temporal genuina no capturada por los efectos de año.
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:14px">
+    <div style="font-size:13px;font-weight:700;margin-bottom:.6rem">R² within comparado — ¿cuánto explica cada modelo?</div>
+    <div class="r2-bar-wrap">
+      <div class="r2-row">
+        <span class="r2-label">OLS</span>
+        <div class="r2-track"><div class="r2-fill" style="width:100%;background:#378ADD">5.84% del total</div></div>
+        <span class="r2-pct">5.84%</span>
+      </div>
+      <div class="r2-row">
+        <span class="r2-label">FE mun.</span>
+        <div class="r2-track"><div class="r2-fill" style="width:100%;background:#1D9E75">R² within: los FE absorben gran parte</div></div>
+        <span class="r2-pct">within</span>
+      </div>
+    </div>
+    <div style="font-size:11px;color:#888;margin-top:5px;line-height:1.5">El R² del OLS (5.84%) es modesto: las tres variables solo explican el 5.8% de la variación total en reprobación. El R² within del FE es más difícil de comparar directamente porque los efectos fijos absorben la variación entre municipios antes de que entre el modelo.</div>
+  </div>
+</div>
+
+<!-- SECCIÓN 6: HALLAZGOS -->
+<div class="sec">
+  <div class="sec-label">Hallazgos e interpretación sustantiva</div>
+  <div class="finding red"><strong>Hallazgo 1 — El OLS miente sobre las incautaciones.</strong> El OLS muestra que ln(gramos) tiene un efecto positivo y significativo sobre la reprobación (β = 0.226, p = 0.006). Pero ese efecto desaparece completamente al controlar por la identidad del municipio (β = 0.033, p = 0.555). Lo que el OLS capturaba era que los municipios grandes (Soacha, Girardot, Facatativá) tienen simultáneamente más incautaciones, más reprobación y más pobreza — no porque haya causalidad, sino porque comparten características urbanas.</div>
+  <div class="finding teal"><strong>Hallazgo 2 — La pobreza sí tiene un efecto causal temporal.</strong> La incidencia de pobreza es la única variable que mantiene significancia estadística en el modelo FE (β = 0.177, p = 0.026). Esto dice algo poderoso: cuando Cundinamarca como departamento es más pobre un año (relativo a su propio promedio), los municipios tienen más reprobación ese año. El mecanismo es plausible: más pobreza → mayor trabajo infantil y presión económica sobre los hogares → más reprobación.</div>
+  <div class="finding amber"><strong>Hallazgo 3 — La pobreza desaparece en el TWFE por una razón técnica, no sustantiva.</strong> En el modelo de doble vía (TWFE), la variable incidencia_pobreza desaparece del modelo. Esto no significa que la pobreza deje de importar: significa que el dato es departamental (mismo valor para los 116 municipios en cada año), por lo que los efectos fijos de año (γ_t) lo absorben perfectamente. Es una limitación de los datos, no del fenómeno.</div>
+  <div class="finding blue"><strong>Hallazgo 4 — No hay evidencia de efecto causal de las incautaciones sobre la reprobación.</strong> La conclusión más rigurosa del análisis es que, una vez eliminada la heterogeneidad no observada entre municipios, no existe una relación estadísticamente identificable entre la intensidad de las incautaciones y la tasa de reprobación escolar dentro de los mismos municipios a lo largo del tiempo. Esto no descarta el vínculo teórico — puede existir, pero los datos actuales no tienen el poder suficiente para identificarlo.</div>
+  <div class="finding gray"><strong>Hallazgo 5 — La violencia por bandas muestra una asociación positiva pero imprecisa.</strong> En los tres modelos, el coeficiente de ln(violencia) es positivo (entre 0.4 y 1.1), lo que va en la dirección teórica esperada. Sin embargo, los errores estándar clustered son grandes y el p-valor no llega al umbral del 5% en ninguna especificación. El resultado es sugerente pero no concluyente con estos datos.</div>
+</div>
+
+<!-- SECCIÓN 7: EXPLICACIÓN PARA DUMMIES COMPLETA -->
+<div class="sec">
+  <div class="sec-label">Conceptos clave explicados para no especialistas</div>
+  <div class="three-col">
+    <div class="explain-box" style="margin-bottom:0">
+      <div class="explain-title">¿Qué es un coeficiente β?</div>
+      <div class="explain-body">Es la "palanca": cuánto cambia la reprobación cuando la variable explicativa sube una unidad. β = 0.226 para ln(gramos) en OLS significa: "si los gramos incautados aumentan 1%, la reprobación sube en promedio 0.226 puntos porcentuales". Cuando β es cercano a cero, el efecto es pequeño o nulo.</div>
+    </div>
+    <div class="explain-box" style="margin-bottom:0">
+      <div class="explain-title">¿Qué significa p-valor?</div>
+      <div class="explain-body">Es la probabilidad de observar ese resultado por puro azar si en realidad no hubiera efecto. p = 0.006 significa: "hay solo un 0.6% de probabilidad de que este resultado sea accidental". Por convención: p &lt; 0.05 = significativo (*), p &lt; 0.01 = muy significativo (**), p &lt; 0.001 = altamente significativo (***).</div>
+    </div>
+    <div class="explain-box" style="margin-bottom:0">
+      <div class="explain-title">¿Qué son los efectos fijos?</div>
+      <div class="explain-body">Son una forma de eliminar el "ruido" de las diferencias permanentes entre municipios. Imagina que Chía siempre tiene buena educación y Girardot siempre tiene más problemas — no por las drogas, sino por su historia. Los efectos fijos "neutralizan" esas diferencias y nos dejan ver solo lo que cambia <em>dentro</em> de cada municipio a lo largo del tiempo.</div>
+    </div>
+  </div>
+  <div style="margin-top:12px" class="three-col">
+    <div class="explain-box" style="margin-bottom:0">
+      <div class="explain-title">¿Por qué el OLS está sesgado?</div>
+      <div class="explain-body">El OLS asume que no hay factores invisibles que afecten tanto las incautaciones como la reprobación. Pero la urbanización sí lo es: los municipios urbanos tienen más incautaciones registradas y más reprobación por densidad poblacional. Al no controlar esto, el OLS "acusa" a las incautaciones de causar reprobación cuando en realidad ambas son síntomas del mismo factor.</div>
+    </div>
+    <div class="explain-box" style="margin-bottom:0">
+      <div class="explain-title">¿Qué es el SE clustered?</div>
+      <div class="explain-body">El error estándar mide la incertidumbre del coeficiente. Si usamos errores normales, asumimos que cada observación es independiente. Pero los datos de Soacha en 2015, 2016 y 2017 no son independientes — tienen cosas en común. Los SE clustered corrigen eso agrupando los errores por municipio, lo que típicamente agranda los SE y hace más difícil encontrar significancia estadística.</div>
+    </div>
+    <div class="explain-box" style="margin-bottom:0">
+      <div class="explain-title">¿Por qué la pobreza desaparece en TWFE?</div>
+      <div class="explain-body">La incidencia_pobreza es un dato <em>departamental</em>: en 2021, todos los municipios de Cundinamarca tienen el mismo valor (27%). En 2022, todos tienen 22.7%. Cuando el modelo incluye efectos fijos de año, ya está controlando por "qué pasó en cada año en todo el departamento". La pobreza no añade información adicional — ya está capturada por los efectos de año. No significa que no importe: significa que necesitamos datos municipales.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SECCIÓN 8: LIMITACIONES -->
+<div class="sec">
+  <div class="sec-label">Limitaciones del estudio</div>
+  <div class="two-col">
+    <div>
+      <div class="limit-item"><div class="limit-num">1</div><div class="limit-text"><strong>Pobreza solo departamental.</strong> La incidencia_pobreza toma el mismo valor para todos los municipios en cada año. Para un análisis municipal preciso se necesitan datos del Índice de Pobreza Multidimensional (IPM) a nivel municipal del Censo 2018 o proxies municipales como NBI.</div></div>
+      <div class="limit-item"><div class="limit-num">2</div><div class="limit-text"><strong>Endogeneidad no resuelta.</strong> Las incautaciones reflejan tanto la actividad ilegal real como el esfuerzo policial. Un municipio con más policías tendrá más incautaciones aunque la actividad ilegal sea igual. Este problema requiere una estrategia IV (variable instrumental) que no se implementa en esta especificación.</div></div>
+      <div class="limit-item"><div class="limit-num">3</div><div class="limit-text"><strong>Bajo poder explicativo (R² = 5.8% en OLS).</strong> Las tres variables explican menos del 6% de la variación en reprobación. Los determinantes principales de la reprobación escolar (calidad docente, recursos de los hogares, matrícula tardía) no están en el modelo.</div></div>
+    </div>
+    <div>
+      <div class="limit-item"><div class="limit-num">4</div><div class="limit-text"><strong>Valores extremos en gramos.</strong> Hay 61 eventos con cantidades superiores a 1 millón de gramos que dominan los totales. La variable ln(gramos) usa winsorizados al P99, pero la unidad de medida original no está confirmada (gramos vs. kilogramos en el SIEDCO).</div></div>
+      <div class="limit-item"><div class="limit-num">5</div><div class="limit-text"><strong>Causalidad vs. correlación.</strong> Los modelos FE y TWFE son más limpios que el OLS, pero no garantizan identificación causal en sentido estricto. Para eso se necesitan variables instrumentales, diseños de regresión discontinua o experimentos naturales con variación exógena en las incautaciones.</div></div>
+      <div class="limit-item"><div class="limit-num">6</div><div class="limit-text"><strong>Violencia interpersonal: cobertura parcial.</strong> Los datos de violencia solo cubren 54 de los 116 municipios. Los 62 municipios restantes tienen cero eventos registrados, lo que puede reflejar ausencia real de violencia o ausencia de reporte. La variable ln(violencia) = ln(1+n) suaviza pero no elimina este problema.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SECCIÓN 9: SIGUIENTES PASOS -->
+<div class="sec">
+  <div class="sec-label">Próximos pasos para fortalecer la identificación</div>
+  <div class="three-col">
+    <div style="background:#f5f7fc;border-radius:8px;padding:12px">
+      <div style="font-size:20px;font-weight:700;color:#185FA5;margin-bottom:4px">01</div>
+      <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:4px">Reemplazar incidencia_pobreza</div>
+      <div style="font-size:11px;color:#666;line-height:1.55">Usar NBI municipal (DANE, Censo 2018) o IPM municipal como proxy de pobreza con variación entre municipios y en el tiempo.</div>
+    </div>
+    <div style="background:#f5f7fc;border-radius:8px;padding:12px">
+      <div style="font-size:20px;font-weight:700;color:#185FA5;margin-bottom:4px">02</div>
+      <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:4px">Variables instrumentales (IV)</div>
+      <div style="font-size:11px;color:#666;line-height:1.55">Precio internacional de la coca (UNODC) y despliegue policial municipal (DIJIN) como instrumentos exógenos para las incautaciones. Corrige la endogeneidad.</div>
+    </div>
+    <div style="background:#f5f7fc;border-radius:8px;padding:12px">
+      <div style="font-size:20px;font-weight:700;color:#185FA5;margin-bottom:4px">03</div>
+      <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:4px">Panel VAR (causalidad de Granger)</div>
+      <div style="font-size:11px;color:#666;line-height:1.55">Estimar la dirección de la causalidad sin imponerla: ¿preceden las incautaciones a la reprobación, o al revés? Funciones impulso-respuesta.</div>
+    </div>
+    <div style="background:#f5f7fc;border-radius:8px;padding:12px">
+      <div style="font-size:20px;font-weight:700;color:#185FA5;margin-bottom:4px">04</div>
+      <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:4px">Rezagos temporales</div>
+      <div style="font-size:11px;color:#666;line-height:1.55">Los efectos de las economías ilegales sobre la educación no son inmediatos. Incluir ln(gramos)_t-1 y ln(gramos)_t-2 para capturar efectos rezagados.</div>
+    </div>
+    <div style="background:#f5f7fc;border-radius:8px;padding:12px">
+      <div style="font-size:20px;font-weight:700;color:#185FA5;margin-bottom:4px">05</div>
+      <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:4px">Desagregar por sustancia</div>
+      <div style="font-size:11px;color:#666;line-height:1.55">ln(marihuana), ln(cocaina), ln(basuco) pueden tener efectos diferenciados. El basuco (más asociado al consumo local) puede ser más dañino para el entorno escolar que el tráfico de cocaína.</div>
+    </div>
+    <div style="background:#f5f7fc;border-radius:8px;padding:12px">
+      <div style="font-size:20px;font-weight:700;color:#185FA5;margin-bottom:4px">06</div>
+      <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:4px">Modelos de mediación</div>
+      <div style="font-size:11px;color:#666;line-height:1.55">Testear si la violencia es mediadora entre las incautaciones y la reprobación (modelos de ecuaciones estructurales SEM) o si actúa como variable independiente directa.</div>
+    </div>
+  </div>
+</div>
+
+<!-- TECNOLOGÍA -->
+<div class="sec">
+  <div class="sec-label">Tecnología y metodología</div>
+  <div class="pill-row">
+    <span class="pill">Regresión OLS agrupada (Pooled)</span>
+    <span class="pill">FE Within (demeaning por municipio)</span>
+    <span class="pill">TWFE (municipio + año)</span>
+    <span class="pill">SE clustered HC3 por municipio</span>
+    <span class="pill">F-test de Chow (FE vs OLS)</span>
+    <span class="pill">F-test efectos temporales</span>
+    <span class="pill">Winsorización P99 por sustancia</span>
+    <span class="pill">R / plm / lmtest / sandwich / coeftest</span>
+    <span class="pill">ln(1 + x) para violencia con ceros</span>
+  </div>
+</div>
+
+<div class="footer">
+  Cundinamarca · 116 municipios · 2015–2024 · Variable dependiente: tasa de reprobación escolar (%) · Marzo 2026 · Documento de Trabajo
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const modelos = ['OLS\nagrupado','FE\nmunicip.','TWFE'];
+const cGramosData = [0.226, 0.033, 0.044];
+const cViolData   = [1.148, 0.405, 0.447];
+const seGramos = [0.082, 0.056, 0.053];
+const seViol   = [0.626, 0.434, 0.418];
+const sigGramos = [true, false, false];
+const sigViol   = [false, false, false];
+
+const tc='#777';
+const gc='rgba(0,0,0,0.05)';
+
+function barChart(id, data, seArr, sigArr, colors, yLabel){
+  new Chart(document.getElementById(id),{
+    type:'bar',
+    data:{
+      labels:modelos,
+      datasets:[{
+        data:data,
+        backgroundColor:colors,
+        borderRadius:5,
+        borderWidth:0
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          callbacks:{
+            label:function(ctx){
+              const i=ctx.dataIndex;
+              return [
+                ' β = '+data[i].toFixed(4),
+                ' SE = '+seArr[i].toFixed(3),
+                sigArr[i]?' Significativo':'No significativo'
+              ];
+            }
+          }
+        }
+      },
+      scales:{
+        x:{ticks:{color:tc,font:{size:10}},grid:{color:gc}},
+        y:{
+          ticks:{color:tc,font:{size:10}},
+          grid:{color:gc},
+          title:{display:true,text:yLabel,color:tc,font:{size:10}},
+          beginAtZero:true
+        }
+      }
+    }
+  });
+}
+
+barChart(
+  'cGramos', cGramosData, seGramos, sigGramos,
+  ['#378ADD','#B4B2A9','#B4B2A9'],
+  'Coeficiente β'
+);
+
+barChart(
+  'cViolencia', cViolData, seViol, sigViol,
+  ['#378ADD','#B4B2A9','#B4B2A9'],
+  'Coeficiente β'
+);
+</script>
+</body>
+</html>
